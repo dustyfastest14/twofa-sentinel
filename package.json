@@ -1,6 +1,6 @@
 {
-  "name": "totp-offline",
-  "version": "0.0.0",
+  "name": "twofa.dev",
+  "version": "0.0.1",
   "private": true,
   "type": "module",
   "engines": {
