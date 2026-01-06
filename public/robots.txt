@@ -1,0 +1,7 @@
+# twofa.dev - Robots.txt
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://totp-offline.com/sitemap.xml
+

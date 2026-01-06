@@ -1,0 +1,24 @@
+{
+  "name": "twofa.dev",
+  "short_name": "TOTP",
+  "description": "Generate secure TOTP 2FA codes offline in your browser. No account needed, no data sent to servers.",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "theme_color": "#18181b",
+  "background_color": "#fafafa",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/"
+}
