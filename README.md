@@ -1,150 +1,52 @@
-# twofa.dev
+# 2FA Sentinel 🛡️
 
-A free, open-source, offline TOTP (Time-based One-Time Password) authenticator that runs entirely in your browser. Generate secure 2FA codes without internet connection, no account required, and no data sent to servers.
+现代暗黑科技风 TOTP 2FA 离线验证器，支持 WebDAV 云端一键备份。
 
-## What It Does
+基于开源项目 [twofa.dev](https://github.com/maurocasas/twofa.dev) 深度二次开发重构。
 
-twofa.dev is a Progressive Web App (PWA) that generates TOTP authentication codes for two-factor authentication. It works completely offline after the initial load, making it perfect for:
+---
 
-- Generating 2FA codes when you don't have internet access
-- Using as an alternative to Google Authenticator or Authy
-- Managing multiple TOTP tokens in one place
-- Privacy-conscious users who want their secrets to never leave their device
+## ✨ 核心特性
 
-### Features
+- 🔒 **100% 离线计算**：基于原生 Web Crypto API，断网依然秒级生成 TOTP 动态验证码。
+- ☁️ **WebDAV 云端同步**：支持坚果云、Alist、Nextcloud、群晖等任意标准 WebDAV 服务，一键安全上传与恢复。
+- ⚡ **无跨域阻碍**：基于 Cloudflare Pages Functions 代理穿透，解决纯前端 WebDAV 跨域 (CORS) 限制。
+- 🎨 **极客暗黑科技视觉**：全套 Cyberpunk 深色毛玻璃 UI、动态环形霓虹雷达倒计时、JetBrains Mono 专属字体。
+- 📱 **PWA 桌面/移动双端支持**：可直接“添加到主屏幕”作为独立无边框 App 使用。
+- 📷 **二维码极速扫码**：手机或自带摄像头设备支持一键扫描添加 2FA 密钥。
+- 📤 **自由导入/导出**：支持标准 JSON 备份文件迁移，不被任何平台锁定。
 
-- 🔒 **100% Offline** - Works without internet connection after first load
-- 📱 **Progressive Web App** - Install on your device for native app experience
-- 📷 **QR Code Scanner** - Scan QR codes to quickly add tokens
-- ✏️ **Manual Entry** - Add tokens manually with custom settings
-- 📤 **Export/Import** - Backup and restore your tokens as JSON
-- 🔄 **Auto-refresh** - TOTP codes automatically update every 30 seconds
-- 🎨 **Modern UI** - Clean, responsive interface built with Vue 3 and PrimeVue
-- 🔐 **No Account Required** - No registration, no servers, no tracking
+---
 
-## Security Considerations
+## 🛠️ 本地开发与构建
 
-### ✅ What Makes It Secure
+### 环境要求
+- Node.js `>= 20`
+- npm
 
-- **No Server Communication**: All TOTP generation happens client-side using the Web Crypto API. Your secrets never leave your device.
-- **Offline-First**: Once loaded, the app works completely offline, reducing attack surface.
-- **Open Source**: The code is open for security audits and verification.
-- **Standard TOTP Algorithm**: Implements RFC 6238 TOTP standard, compatible with all major services.
+### 安装运行
+```bash
+git clone https://github.com/dustyfastest14/twofa-sentinel.git
+cd twofa-sentinel
 
-### ⚠️ Important Security Notes
-
-- **Browser Storage**: Tokens are stored in your browser's `localStorage`. This means:
-  - Secrets are stored in **plain text** in localStorage (browser storage)
-  - Anyone with access to your device and browser can view your tokens
-  - Clearing browser data will delete all tokens (unless you have a backup)
-  - Browser extensions with storage access could potentially read your tokens
-
-- **Best Practices**:
-  - Use this app on a **trusted device** only
-  - Keep your browser updated and secure
-  - Regularly export your tokens as backup
-  - Consider using browser profiles or private browsing for additional isolation
-  - Be cautious of browser extensions that request storage permissions
-
-- **Not Recommended For**:
-  - Shared or public computers
-  - Devices with untrusted software or malware
-  - High-security environments requiring hardware security modules (HSM)
-
-### Privacy
-
-- No analytics or tracking by default (optional Plausible analytics can be enabled via environment variable)
-- No data collection
-- No external API calls
-- All processing happens locally in your browser
-
-## Project Setup
-
-### Prerequisites
-
-- Node.js `^20.19.0` or `>=22.12.0`
-- npm (comes with Node.js)
-
-### Installation
-
-```sh
+# 安装依赖
 npm install
-```
 
-## Development
-
-### Run Locally
-
-Start the development server with hot-reload:
-
-```sh
+# 本地调试
 npm run dev
-```
 
-The app will be available at `http://localhost:5173` (or the next available port).
-
-### Development Features
-
-- Hot Module Replacement (HMR) for instant updates
-- Vue DevTools integration
-- PWA enabled in development mode for testing
-- Service worker registration for offline testing
-
-## Building for Production
-
-### Build
-
-Create an optimized production build:
-
-```sh
+# 生产环境打包
 npm run build
 ```
 
-The built files will be in the `dist/` directory, ready to be deployed to any static hosting service.
+---
 
-### Preview Production Build
+## 🚀 部署至 Cloudflare Pages
 
-Preview the production build locally:
-
-```sh
-npm run preview
-```
-
-### Build Configuration
-
-- **Prerendering**: The build process includes prerendering for SEO (disabled in CI environments)
-- **PWA**: Service worker and manifest are automatically generated
-- **Optimization**: Assets are minified and optimized for production
-
-## Technology Stack
-
-- **Vue 3** - Progressive JavaScript framework
-- **Vite** - Next-generation frontend build tool
-- **Pinia** - State management
-- **PrimeVue** - UI component library
-- **Web Crypto API** - Cryptography for TOTP generation
-- **PWA Plugin** - Progressive Web App support
-
-## Browser Support
-
-- Modern browsers with Web Crypto API support
-- Chrome/Edge (recommended)
-- Firefox
-- Safari
-- Mobile browsers (iOS Safari, Chrome Mobile)
-
-## Deployment
-
-The app can be deployed to any static hosting service:
-
-- Cloudflare Pages
-- Netlify
-- Vercel
-- GitHub Pages
-- Any static file server
-
-Simply build the project and upload the `dist/` directory contents.
-
-## Credits
-
-Created by [@maurohouseless](https://twitter.com/maurohouseless)
+本项目天然支持部署到 Cloudflare Pages：
+1. 在 Cloudflare 控制台选择 **Workers 和 Pages** -> **创建应用程序** -> **Pages** -> **连接到 Git**。
+2. 选择本仓库：`dustyfastest14/twofa-sentinel`。
+3. 构建配置：
+   - **构建命令**：`npm run build`
+   - **输出目录**：`dist`
+4. 点击部署即可完成上线！

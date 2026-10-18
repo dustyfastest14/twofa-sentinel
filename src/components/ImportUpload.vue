@@ -29,15 +29,15 @@ function onFileSelect(event) {
       const count = store.importTokens(e.target.result, false)
       toast.add({
         severity: 'success',
-        summary: 'Import Complete',
-        detail: `${count} tokens imported`,
+        summary: '导入成功',
+        detail: `已成功导入 ${count} 个令牌`,
         life: 3000
       })
     } catch (error) {
       toast.add({
         severity: 'error',
-        summary: 'Import Failed',
-        detail: error.message || 'Invalid file format',
+        summary: '导入失败',
+        detail: error.message || '无效的文件格式',
         life: 5000
       })
     }
@@ -80,7 +80,7 @@ defineExpose({
   <!-- Styled button matching PrimeVue secondary style -->
   <Button
     v-if="showButton"
-    label="Import"
+    label="导入备份"
     icon="pi pi-upload"
     size="small"
     text

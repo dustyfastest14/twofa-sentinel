@@ -6,6 +6,7 @@ import { eventBus } from '@/utils/eventBus.js'
 import SpeedDial from 'primevue/speeddial'
 import Dialog from 'primevue/dialog'
 import { QrcodeStream } from 'vue-qrcode-reader'
+import WebdavModal from './WebdavModal.vue'
 
 const emit = defineEmits(['open-sidebar', 'export', 'clear-all'])
 
@@ -16,38 +17,48 @@ const toast = useToast()
 const showQrScanner = ref(false)
 const qrScannerError = ref('')
 
-// SpeedDial menu items (reversed for semi-circle up direction)
+// WebDAV modal state for mobile
+const showWebdavModal = ref(false)
+
+// SpeedDial menu items
 const speedDialItems = [
   {
-    label: 'Clear All',
+    label: 'WebDAV 云备份',
+    icon: 'pi pi-cloud',
+    command: () => {
+      showWebdavModal.value = true
+    }
+  },
+  {
+    label: '清空所有',
     icon: 'pi pi-trash',
     command: (e) => {
       emit('clear-all', e.originalEvent)
     }
   },
   {
-    label: 'Export JSON',
+    label: '导出 JSON',
     icon: 'pi pi-download',
     command: () => {
       emit('export')
     }
   },
   {
-    label: 'Import JSON',
+    label: '导入 JSON',
     icon: 'pi pi-upload',
     command: () => {
       eventBus.emit('trigger-import')
     }
   },
   {
-    label: 'Scan QR',
+    label: '扫描二维码',
     icon: 'pi pi-camera',
     command: () => {
       openQrScanner()
     }
   },
   {
-    label: 'Add Token',
+    label: '添加令牌',
     icon: 'pi pi-plus',
     command: () => {
       emit('open-sidebar')
@@ -71,38 +82,33 @@ defineExpose({
 })
 
 function onQrDecode(detectedCodes) {
-  // Parse otpauth:// URL
   try {
-    // vue-qrcode-reader emits an array of detected codes
-    // Each code has a rawValue property with the actual string
     if (!detectedCodes || !Array.isArray(detectedCodes) || detectedCodes.length === 0) {
-      throw new Error('No QR code detected')
+      throw new Error('未检测到有效的二维码')
     }
     
     const qrCodeString = detectedCodes[0].rawValue
     if (!qrCodeString || typeof qrCodeString !== 'string') {
-      throw new Error('Invalid QR code format')
+      throw new Error('二维码格式不正确')
     }
     
     const url = new URL(qrCodeString)
     
     if (url.protocol !== 'otpauth:') {
-      throw new Error('Invalid QR code. Expected an authenticator QR code.')
+      throw new Error('无效的二维码：必须是 2FA 身份验证器二维码 (otpauth://)')
     }
     
-    // Parse the otpauth URL
-    // Format: otpauth://totp/Label?secret=XXX&issuer=YYY&algorithm=ZZZ&digits=N&period=N
-    const type = url.hostname // 'totp' or 'hotp'
+    const type = url.hostname
     if (type !== 'totp') {
-      throw new Error('Only TOTP codes are supported.')
+      throw new Error('当前仅支持 TOTP 算法。')
     }
     
-    const label = decodeURIComponent(url.pathname.slice(1)) // Remove leading /
+    const label = decodeURIComponent(url.pathname.slice(1))
     const params = url.searchParams
     
     const secret = params.get('secret')
     if (!secret) {
-      throw new Error('No secret found in QR code.')
+      throw new Error('二维码中未包含密钥 (Secret)。')
     }
     
     const issuer = params.get('issuer')
@@ -110,10 +116,8 @@ function onQrDecode(detectedCodes) {
     const digits = parseInt(params.get('digits') || '6', 10)
     const period = parseInt(params.get('period') || '30', 10)
     
-    // Use issuer + account name, or just label
     const name = issuer ? `${issuer} (${label.replace(issuer + ':', '')})` : label
     
-    // Add the token
     store.addToken({
       name: name.trim(),
       secret: secret.toUpperCase(),
@@ -124,8 +128,8 @@ function onQrDecode(detectedCodes) {
     
     toast.add({
       severity: 'success',
-      summary: 'Token Added',
-      detail: `${name} has been added from QR code`,
+      summary: '添加成功',
+      detail: `已通过二维码成功添加 ${name}`,
       life: 3000
     })
     
@@ -133,15 +137,15 @@ function onQrDecode(detectedCodes) {
   } catch (error) {
     toast.add({
       severity: 'error',
-      summary: 'Invalid QR Code',
-      detail: error.message || 'Could not parse QR code',
+      summary: '无效二维码',
+      detail: error.message || '无法解析此二维码',
       life: 5000
     })
   }
 }
 
 function onQrError(error) {
-  qrScannerError.value = error.message || 'Camera access denied'
+  qrScannerError.value = error.message || '相机权限被拒绝或不可用'
 }
 </script>
 
@@ -157,7 +161,7 @@ function onQrError(error) {
     <template #header>
       <div class="qr-dialog-header">
         <i class="pi pi-camera"></i>
-        <span>Scan QR Code</span>
+        <span>扫描 2FA 二维码</span>
       </div>
     </template>
     
@@ -182,21 +186,24 @@ function onQrError(error) {
       </p>
       
       <div class="qr-disclaimer">
-        <p class="qr-hint">Point your camera at an authenticator QR code</p>
+        <p class="qr-hint">将摄像头对准身份验证器二维码</p>
         <p class="qr-privacy">
           <i class="pi pi-lock"></i>
-          Camera data is processed locally. Nothing is sent to any server.
+          图像仅在本地浏览器解析，绝不上报服务器。
         </p>
       </div>
     </div>
   </Dialog>
+
+  <!-- Mobile WebDAV Modal -->
+  <WebdavModal v-model:visible="showWebdavModal" />
 
   <!-- Mobile SpeedDial -->
   <SpeedDial
     :model="speedDialItems"
     type="semi-circle"
     direction="up"
-    :radius="60"
+    :radius="70"
     mask
     class="mobile-speed-dial"
   />
@@ -383,4 +390,3 @@ function onQrError(error) {
   }
 }
 </style>
-

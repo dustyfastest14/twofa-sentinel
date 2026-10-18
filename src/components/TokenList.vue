@@ -29,21 +29,23 @@ const hasTokens = computed(() => props.tokens.length > 0)
     
     <div v-else class="empty-state">
       <div class="empty-content">
-        <div class="empty-icon">
-          <i class="pi pi-key"></i>
+        <div class="empty-radar">
+          <div class="radar-sweep"></div>
+          <i class="pi pi-shield"></i>
         </div>
-        <h3 class="empty-title">No tokens yet</h3>
-        <p class="empty-description">Add your first TOTP token to get started.</p>
+        <h3 class="empty-title">安全库就绪 · 暂无令牌</h3>
+        <p class="empty-description">点击添加或扫描二维码，录入您的首个动态 2FA 令牌</p>
         
         <div class="empty-actions mobile-only">
           <Button
-            label="Add Token"
+            label="手动录入令牌"
             icon="pi pi-plus"
             size="small"
+            class="cyber-empty-btn"
             @click="emit('add-token')"
           />
           <Button
-            label="Scan QR"
+            label="扫描 2FA 二维码"
             icon="pi pi-camera"
             severity="secondary"
             outlined
@@ -72,42 +74,48 @@ const hasTokens = computed(() => props.tokens.length > 0)
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 400px;
+  min-height: 420px;
   padding: 3rem 1rem;
 }
 
 .empty-content {
   text-align: center;
-  max-width: 320px;
+  max-width: 360px;
 }
 
-.empty-icon {
+.empty-radar {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 80px;
-  height: 80px;
-  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  width: 88px;
+  height: 88px;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, rgba(15, 23, 42, 0.4) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.3);
   border-radius: 50%;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
+  box-shadow: 0 0 30px rgba(56, 189, 248, 0.15);
 }
 
-.empty-icon i {
-  font-size: 2rem;
-  color: #3b82f6;
+.empty-radar i {
+  font-size: 2.25rem;
+  color: #38bdf8;
+  z-index: 1;
 }
 
 .empty-title {
   margin: 0 0 0.5rem;
   font-size: 1.25rem;
-  font-weight: 600;
-  color: #18181b;
+  font-weight: 700;
+  color: #f8fafc;
+  letter-spacing: -0.01em;
 }
 
 .empty-description {
   margin: 0 0 1.5rem;
-  font-size: 0.875rem;
-  color: #71717a;
+  font-size: 0.85rem;
+  color: #94a3b8;
+  line-height: 1.5;
 }
 
 .empty-actions {
@@ -116,11 +124,12 @@ const hasTokens = computed(() => props.tokens.length > 0)
   gap: 0.75rem;
 }
 
-.empty-actions :deep(.p-button) {
-  justify-content: center;
+.cyber-empty-btn {
+  background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%) !important;
+  border-color: rgba(56, 189, 248, 0.4) !important;
+  color: white !important;
 }
 
-/* Hide on desktop, show on mobile */
 .mobile-only {
   display: none;
 }
@@ -137,4 +146,3 @@ const hasTokens = computed(() => props.tokens.length > 0)
   }
 }
 </style>
-

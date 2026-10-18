@@ -33,56 +33,51 @@ function closeDrawer() {
         rounded
         class="close-btn"
         @click="closeDrawer"
-        aria-label="Close"
+        aria-label="关闭"
       />
 
       <div class="about-logo">
-        <img src="/icon.svg" alt="twofa.dev" class="app-icon" />
-        <h2>twofa.dev</h2>
+        <div class="logo-shield">
+          <i class="pi pi-shield"></i>
+        </div>
+        <h2>2FA SENTINEL</h2>
+        <span class="version-tag">v2.0 // WebDAV Edition</span>
       </div>
       
       <p class="about-description">
-        A secure, privacy-focused authenticator app that generates Time-based One-Time Passwords (TOTP) 
-        completely offline in your browser.
+        一个现代极客风、高安全隐私的 2FA 身份验证器，完全在您的浏览器本地离线生成基于时间的一次性密码 (TOTP)，并支持 WebDAV 云端一键备份。
       </p>
       
       <div class="about-features">
-        <h3>Features</h3>
+        <h3>核心特性</h3>
         <ul>
-          <li><i class="pi pi-lock"></i> 100% offline &amp; private</li>
-          <li><i class="pi pi-mobile"></i> Works on any device</li>
-          <li><i class="pi pi-camera"></i> QR code scanning</li>
-          <li><i class="pi pi-download"></i> Import/Export tokens</li>
-          <li><i class="pi pi-shield"></i> Local storage only</li>
+          <li><i class="pi pi-lock"></i> 100% 离线计算</li>
+          <li><i class="pi pi-cloud"></i> WebDAV 跨端同步</li>
+          <li><i class="pi pi-camera"></i> 二维码极速扫码</li>
+          <li><i class="pi pi-download"></i> JSON 自由导入/导出</li>
+          <li><i class="pi pi-shield"></i> 本地持久化储存</li>
+          <li><i class="pi pi-mobile"></i> 支持全平台 PWA</li>
         </ul>
       </div>
       
       <div class="about-security">
         <i class="pi pi-verified"></i>
         <p>
-          All your tokens are stored securely in your browser's local storage. 
-          No data is ever sent to any server.
+          零知识架构：所有密钥与令牌均安全留存于本地设备，绝不向任何第三方服务上报私密数据。
         </p>
-      </div>
-      
-      <div class="about-credits">
-        <a 
-          href="https://twitter.com/maurohouseless" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          class="credit-link"
-        >
-          Made by @maurohouseless
-        </a>
       </div>
     </div>
   </Drawer>
 </template>
 
 <style>
-/* About Drawer styles */
+/* About Drawer dark styles */
 .about-drawer.p-drawer {
   width: 360px !important;
+  background: rgba(13, 16, 25, 0.98) !important;
+  border-left: 1px solid rgba(59, 130, 246, 0.2) !important;
+  backdrop-filter: blur(20px) !important;
+  color: #f8fafc !important;
 }
 
 .about-drawer .p-drawer-header {
@@ -95,23 +90,19 @@ function closeDrawer() {
 }
 
 .about-content {
-  padding: 1.5rem;
+  padding: 2rem 1.5rem;
 }
 
 .about-drawer .close-btn {
   position: absolute !important;
-  top: 0.75rem !important;
-  right: 0.75rem !important;
-  left: auto !important;
-  color: #71717a !important;
-  width: 2rem !important;
-  height: 2rem !important;
-  z-index: 1;
+  top: 1rem !important;
+  right: 1rem !important;
+  color: #64748b !important;
 }
 
-.close-btn:hover {
-  background: #f4f4f5 !important;
-  color: #18181b !important;
+.about-drawer .close-btn:hover {
+  color: #f8fafc !important;
+  background: rgba(255, 255, 255, 0.05) !important;
 }
 
 .about-logo {
@@ -123,23 +114,41 @@ function closeDrawer() {
   margin-top: 1rem;
 }
 
-.about-logo .app-icon {
-  width: 64px;
-  height: 64px;
+.logo-shield {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.2), rgba(59, 130, 246, 0.2));
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #38bdf8;
+  font-size: 1.75rem;
+  box-shadow: 0 0 24px rgba(56, 189, 248, 0.3);
 }
 
 .about-logo h2 {
   margin: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #18181b;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #f8fafc;
+}
+
+.version-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  color: #38bdf8;
+  letter-spacing: 0.1em;
 }
 
 .about-description {
   text-align: center;
-  font-size: 0.9375rem;
+  font-size: 0.85rem;
   line-height: 1.6;
-  color: #3f3f46;
+  color: #94a3b8;
   margin: 0 0 1.5rem;
 }
 
@@ -149,11 +158,11 @@ function closeDrawer() {
 
 .about-features h3 {
   margin: 0 0 0.75rem;
-  font-size: 0.8125rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #71717a;
+  letter-spacing: 0.08em;
+  color: #cbd5e1;
 }
 
 .about-features ul {
@@ -169,54 +178,39 @@ function closeDrawer() {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  background: #f9fafb;
+  padding: 0.5rem 0.65rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 8px;
-  font-size: 0.8125rem;
-  color: #3f3f46;
+  font-size: 0.75rem;
+  color: #cbd5e1;
 }
 
 .about-features li i {
-  font-size: 0.875rem;
-  color: #3b82f6;
+  font-size: 0.8rem;
+  color: #38bdf8;
 }
 
 .about-security {
   display: flex;
   gap: 0.75rem;
   padding: 1rem;
-  background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.2);
   border-radius: 12px;
-  margin-bottom: 1.5rem;
 }
 
 .about-security i {
   font-size: 1.25rem;
-  color: #22c55e;
+  color: #10b981;
   flex-shrink: 0;
 }
 
 .about-security p {
   margin: 0;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   line-height: 1.5;
-  color: #166534;
-}
-
-.about-credits {
-  text-align: center;
-}
-
-.credit-link {
-  font-size: 0.875rem;
-  color: #71717a;
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-.credit-link:hover {
-  color: #3b82f6;
-  text-decoration: underline;
+  color: #a7f3d0;
 }
 
 @media (max-width: 768px) {
@@ -225,4 +219,3 @@ function closeDrawer() {
   }
 }
 </style>
-

@@ -24,22 +24,21 @@ const tokenForm = ref({
 
 // Dropdown options
 const algorithms = [
-  { label: 'SHA-1', value: 'SHA-1' },
+  { label: 'SHA-1 (推荐/默认)', value: 'SHA-1' },
   { label: 'SHA-256', value: 'SHA-256' },
   { label: 'SHA-512', value: 'SHA-512' }
 ]
 
 const digitsOptions = [
-  { label: '6 digits', value: 6 },
-  { label: '8 digits', value: 8 }
+  { label: '6 位数字 (标准)', value: 6 },
+  { label: '8 位数字', value: 8 }
 ]
 
 const periodOptions = [
-  { label: '30 seconds', value: 30 },
-  { label: '60 seconds', value: 60 }
+  { label: '30 秒 (标准)', value: 30 },
+  { label: '60 秒', value: 60 }
 ]
 
-// Form validation
 const isValid = ref(false)
 
 watch(tokenForm, () => {
@@ -49,7 +48,6 @@ watch(tokenForm, () => {
 function handleSubmit() {
   if (!isValid.value) return
 
-  // Normalize secret
   const normalizedSecret = tokenForm.value.secret.toUpperCase().replace(/\s/g, '')
 
   emit('save', {
@@ -57,7 +55,6 @@ function handleSubmit() {
     secret: normalizedSecret
   })
 
-  // Reset form
   tokenForm.value = {
     name: '',
     secret: '',
@@ -66,7 +63,6 @@ function handleSubmit() {
     period: 30
   }
 
-  // Close sidebar on mobile after adding
   if (window.innerWidth <= 1024) {
     emit('update:visible', false)
   }
@@ -79,8 +75,11 @@ function closeSidebar() {
 
 <template>
   <aside class="sidenav" :class="{ open: visible }">
-    <div class="sidenav-header-mobile">
-      <span class="header-title">Add Token</span>
+    <div class="sidenav-header">
+      <div class="header-title-box">
+        <span class="cyber-dot"></span>
+        <span class="header-title">添加新身份令牌</span>
+      </div>
       <Button
         icon="pi pi-times"
         text
@@ -93,31 +92,37 @@ function closeSidebar() {
 
     <form @submit.prevent="handleSubmit" class="token-form">
       <div class="form-section">
-        <label for="token-name" class="form-label">Token Name</label>
+        <label for="token-name" class="form-label">
+          <i class="pi pi-tag"></i> 令牌名称
+        </label>
         <InputText
           id="token-name"
           v-model="tokenForm.name"
           class="w-full"
           size="small"
           autocomplete="off"
-          placeholder="e.g. GitHub, Google"
+          placeholder="例如：GitHub (work), Google"
         />
       </div>
 
       <div class="form-section">
-        <label for="token-secret" class="form-label">Secret Key</label>
+        <label for="token-secret" class="form-label">
+          <i class="pi pi-key"></i> 密钥 (Secret Key)
+        </label>
         <InputText
           id="token-secret"
           v-model="tokenForm.secret"
-          class="w-full"
+          class="w-full secret-input"
           size="small"
           autocomplete="off"
-          placeholder="e.g. JBSWY3DPEHPK3PXP"
+          placeholder="例如：JBSWY3DPEHPK3PXP"
         />
       </div>
 
       <div class="form-section">
-        <label for="algorithm" class="form-label">Algorithm</label>
+        <label for="algorithm" class="form-label">
+          <i class="pi pi-cog"></i> 加密算法
+        </label>
         <Select
           id="algorithm"
           v-model="tokenForm.algorithm"
@@ -129,203 +134,198 @@ function closeSidebar() {
         />
       </div>
 
-      <div class="form-section">
-        <label for="digits" class="form-label">Code Length</label>
-        <Select
-          id="digits"
-          v-model="tokenForm.digits"
-          :options="digitsOptions"
-          optionLabel="label"
-          optionValue="value"
-          class="w-full"
-          size="small"
-        />
-      </div>
+      <div class="form-row">
+        <div class="form-section flex-1">
+          <label for="digits" class="form-label">位数</label>
+          <Select
+            id="digits"
+            v-model="tokenForm.digits"
+            :options="digitsOptions"
+            optionLabel="label"
+            optionValue="value"
+            class="w-full"
+            size="small"
+          />
+        </div>
 
-      <div class="form-section">
-        <label for="period" class="form-label">Time Period</label>
-        <Select
-          id="period"
-          v-model="tokenForm.period"
-          :options="periodOptions"
-          optionLabel="label"
-          optionValue="value"
-          class="w-full"
-          size="small"
-        />
+        <div class="form-section flex-1">
+          <label for="period" class="form-label">周期</label>
+          <Select
+            id="period"
+            v-model="tokenForm.period"
+            :options="periodOptions"
+            optionLabel="label"
+            optionValue="value"
+            class="w-full"
+            size="small"
+          />
+        </div>
       </div>
 
       <Button
         type="submit"
-        label="Add Token"
+        label="确认添加令牌"
         icon="pi pi-plus"
-        class="w-full add-btn"
+        class="w-full submit-btn"
         size="small"
         :disabled="!isValid"
       />
 
-      <div class="warning-alert">
-        <i class="pi pi-exclamation-triangle"></i>
-        <p><strong>Warning:</strong> Do not use production or real-world tokens for testing. This is a demo/development tool.</p>
+      <div class="security-banner">
+        <i class="pi pi-shield"></i>
+        <p><strong>隐私声明：</strong>全部密钥经由本地 Web Crypto API 独立处理，绝不上报云端，安全可靠。</p>
       </div>
     </form>
-
-    <div class="sidenav-footer">
-      <div class="footer-info">
-        <i class="pi pi-info-circle"></i>
-        <p>All tokens are stored securely in your browser. Nothing is sent to any server.</p>
-      </div>
-      <div class="footer-credit">
-        Made by <a href="https://twitter.com/maurohouseless" target="_blank" rel="noopener noreferrer">@maurohouseless</a>
-      </div>
-    </div>
   </aside>
 </template>
 
 <style scoped>
 .sidenav {
-  width: 320px;
-  background: white;
-  border-right: 1px solid #e4e4e7;
+  width: 340px;
+  background: rgba(13, 16, 25, 0.95);
+  backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(59, 130, 246, 0.15);
   display: flex;
   flex-direction: column;
   height: calc(100vh - 64px);
   position: sticky;
   top: 64px;
   overflow-y: auto;
+  z-index: 10;
 }
 
-.sidenav-header-mobile {
-  display: none;
+.sidenav-header {
+  display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid #e4e4e7;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.header-title-box {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cyber-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 8px #38bdf8;
 }
 
 .header-title {
-  font-weight: 600;
-  font-size: 1rem;
-  color: #18181b;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #f8fafc;
+  letter-spacing: -0.01em;
 }
 
 .close-btn {
-  color: #71717a;
+  color: #64748b !important;
+}
+.close-btn:hover {
+  color: #f8fafc !important;
 }
 
 .token-form {
   padding: 1.5rem;
-  flex: 1;
-}
-
-.warning-alert {
   display: flex;
-  gap: 0.75rem;
-  align-items: flex-start;
-  padding: 0.875rem;
-  background: #fef3c7;
-  border: 1px solid #fbbf24;
-  border-radius: 8px;
-  margin-top: 1rem;
-}
-
-.warning-alert i {
-  color: #f59e0b;
-  margin-top: 0.125rem;
-  flex-shrink: 0;
-  font-size: 1rem;
-}
-
-.warning-alert p {
-  margin: 0;
-  font-size: 0.8125rem;
-  color: #92400e;
-  line-height: 1.5;
-}
-
-.warning-alert p strong {
-  font-weight: 600;
+  flex-direction: column;
+  gap: 1.15rem;
 }
 
 .form-section {
-  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
 .form-label {
-  display: block;
-  margin-bottom: 0.375rem;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: #3f3f46;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.form-label i {
+  font-size: 0.75rem;
+  color: #38bdf8;
+}
+
+.form-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.flex-1 {
+  flex: 1;
 }
 
 .w-full {
   width: 100%;
 }
 
-.add-btn {
-  background: #18181b;
-  border-color: #18181b;
-  color: white;
-  font-weight: 500;
+.secret-input {
+  font-family: 'JetBrains Mono', monospace !important;
+  letter-spacing: 0.05em;
 }
 
-.add-btn:hover:not(:disabled) {
-  background: #27272a;
-  border-color: #27272a;
+.submit-btn {
+  margin-top: 0.5rem;
+  background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%) !important;
+  border: 1px solid rgba(56, 189, 248, 0.4) !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  padding: 0.6rem !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 16px rgba(2, 132, 199, 0.3) !important;
+  transition: all 0.2s ease !important;
 }
 
-.add-btn:disabled {
-  background: #e4e4e7;
-  border-color: #e4e4e7;
-  color: #a1a1aa;
+.submit-btn:hover:not(:disabled) {
+  box-shadow: 0 6px 24px rgba(2, 132, 199, 0.5) !important;
+  transform: translateY(-1px);
 }
 
-.sidenav-footer {
-  padding: 1.25rem 1.5rem;
-  background: #fafafa;
-  border-top: 1px solid #e4e4e7;
+.submit-btn:disabled {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #475569 !important;
+  box-shadow: none !important;
+}
+
+.security-banner {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.footer-info {
-  display: flex;
-  gap: 0.75rem;
+  gap: 0.6rem;
   align-items: flex-start;
+  padding: 0.85rem;
+  background: rgba(14, 165, 233, 0.06);
+  border: 1px solid rgba(56, 189, 248, 0.15);
+  border-radius: 10px;
 }
 
-.footer-info i {
-  color: #71717a;
-  margin-top: 0.125rem;
+.security-banner i {
+  color: #38bdf8;
+  font-size: 0.9rem;
+  margin-top: 0.15rem;
   flex-shrink: 0;
-  font-size: 0.875rem;
 }
 
-.footer-info p {
+.security-banner p {
   margin: 0;
   font-size: 0.75rem;
-  color: #71717a;
+  color: #94a3b8;
   line-height: 1.5;
 }
 
-.footer-credit {
-  font-size: 0.6875rem;
-  color: #a1a1aa;
-  text-align: center;
-  padding-top: 0.5rem;
-  border-top: 1px solid #e4e4e7;
-}
-
-.footer-credit a {
-  color: #71717a;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.footer-credit a:hover {
-  color: #1da1f2;
+.security-banner p strong {
+  color: #e2e8f0;
 }
 
 @media (max-width: 1024px) {
@@ -335,21 +335,13 @@ function closeSidebar() {
     top: 64px;
     height: calc(100vh - 64px);
     z-index: 999;
-    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.7);
     transform: translateX(-100%);
-    transition: transform 0.3s ease;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .sidenav.open {
     transform: translateX(0);
-  }
-
-  .sidenav-header-mobile {
-    display: flex;
-  }
-
-  .token-form {
-    padding-top: 1rem;
   }
 }
 </style>

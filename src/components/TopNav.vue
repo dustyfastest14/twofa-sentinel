@@ -3,63 +3,56 @@ import { ref } from 'vue'
 import Button from 'primevue/button'
 import ImportUpload from './ImportUpload.vue'
 import AboutDrawer from './AboutDrawer.vue'
+import WebdavModal from './WebdavModal.vue'
 
 const emit = defineEmits(['clear-all', 'export'])
 
-// About drawer state
 const showAboutDrawer = ref(false)
+const showWebdavModal = ref(false)
 </script>
 
 <template>
   <nav class="top-nav">
     <div class="nav-content">
       <div class="nav-brand">
-        <i class="pi pi-lock"></i>
-        <span class="brand-name">twofa.dev</span>
-        <a
-          href="https://twitter.com/maurohouseless"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="twitter-link"
-          aria-label="Follow on Twitter"
-        >
-          <i class="pi pi-twitter"></i>
-        </a>
-        <a
-          href="https://github.com/maurocasas/twofa.dev"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="github-link"
-          aria-label="View on GitHub"
-        >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
-          </svg>
-        </a>
+        <div class="brand-badge">
+          <i class="pi pi-shield"></i>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">2FA SENTINEL</span>
+          <span class="brand-tag">LOCAL // E2EE</span>
+        </div>
       </div>
 
       <div class="nav-actions desktop-only">
         <Button
-          label="Clear All"
-          icon="pi pi-trash"
-          text
+          label="WebDAV 云同步"
+          icon="pi pi-cloud"
+          class="cyber-btn cyber-btn-primary"
           size="small"
-          @click="(e) => emit('clear-all', e)"
+          @click="showWebdavModal = true"
         />
         <Button
-          label="Export"
+          label="导出备份"
           icon="pi pi-download"
-          text
+          class="cyber-btn"
           size="small"
           @click="emit('export')"
         />
         <ImportUpload />
+        <Button
+          label="清空"
+          icon="pi pi-trash"
+          class="cyber-btn cyber-btn-danger"
+          size="small"
+          @click="(e) => emit('clear-all', e)"
+        />
       </div>
 
-      <!-- About button - always visible -->
+      <!-- About button -->
       <Button
         icon="pi pi-info-circle"
-        label="About"
+        label="关于"
         text
         size="small"
         class="about-btn"
@@ -70,22 +63,28 @@ const showAboutDrawer = ref(false)
 
   <!-- About Drawer -->
   <AboutDrawer v-model:visible="showAboutDrawer" />
+
+  <!-- WebDAV Modal -->
+  <WebdavModal v-model:visible="showWebdavModal" />
 </template>
 
 <style scoped>
 .top-nav {
-  background: #18181b;
-  border-bottom: 1px solid #27272a;
+  background: rgba(10, 12, 18, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(59, 130, 246, 0.15);
   position: sticky;
   top: 0;
   z-index: 1000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
 .nav-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 1.5rem;
+  padding: 0 1.75rem;
   height: 64px;
   gap: 1rem;
 }
@@ -94,96 +93,99 @@ const showAboutDrawer = ref(false)
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  flex: 1;
 }
 
-.nav-brand i {
-  font-size: 1.125rem;
-  color: #a1a1aa;
-}
-
-.brand-name {
-  font-size: 0.9375rem;
-  font-weight: 600;
-  color: #fafafa;
-  letter-spacing: -0.01em;
-}
-
-.twitter-link,
-.github-link {
+.brand-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  color: #71717a;
-  text-decoration: none;
-  transition: all 0.15s ease;
-  margin-left: 0.5rem;
-}
-
-.twitter-link:hover {
-  background: #27272a;
-  color: #1da1f2;
-}
-
-.github-link:hover {
-  background: #27272a;
-  color: #fafafa;
-}
-
-.twitter-link i {
+  color: #38bdf8;
   font-size: 1rem;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
 }
 
-.github-link svg {
-  width: 1rem;
-  height: 1rem;
+.brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #f8fafc;
+  letter-spacing: 0.08em;
+  background: linear-gradient(90deg, #ffffff, #93c5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.brand-tag {
+  font-size: 0.55rem;
+  font-family: 'JetBrains Mono', monospace;
+  color: #38bdf8;
+  letter-spacing: 0.12em;
+  font-weight: 700;
 }
 
 .nav-actions {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
 }
 
-/* Small button sizing */
-.nav-actions :deep(.p-button) {
-  color: #d4d4d8;
-  font-size: 0.8125rem;
-  padding: 0.5rem 0.75rem;
+.cyber-btn {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #cbd5e1 !important;
+  font-size: 0.8125rem !important;
+  font-weight: 500 !important;
+  border-radius: 8px !important;
+  padding: 0.45rem 0.85rem !important;
+  transition: all 0.2s ease !important;
 }
 
-.nav-actions :deep(.p-button:hover) {
-  background: #27272a;
-  color: #fafafa;
+.cyber-btn:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
 }
 
-/* About button - always visible, pushed to right */
+.cyber-btn-primary {
+  background: rgba(14, 165, 233, 0.15) !important;
+  border-color: rgba(56, 189, 248, 0.35) !important;
+  color: #38bdf8 !important;
+}
+
+.cyber-btn-primary:hover {
+  background: rgba(14, 165, 233, 0.25) !important;
+  border-color: rgba(56, 189, 248, 0.6) !important;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.3) !important;
+}
+
+.cyber-btn-danger:hover {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+  color: #f87171 !important;
+}
+
 .about-btn {
-  flex-shrink: 0;
-  color: #a1a1aa !important;
+  color: #94a3b8 !important;
 }
 
 .about-btn:hover {
-  background: #27272a !important;
-  color: #fafafa !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #ffffff !important;
 }
 
 @media (max-width: 1024px) {
   .desktop-only {
     display: none;
-  }
-}
-
-@media (max-width: 768px) {
-  .nav-content {
-    padding: 0 1rem;
-  }
-
-  .brand-name {
-    font-size: 0.875rem;
   }
 }
 </style>

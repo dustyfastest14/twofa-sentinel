@@ -18,11 +18,9 @@ const store = useTokenStore()
 const confirm = useConfirm()
 const toast = useToast()
 
-// PWA Install prompt
 const deferredPrompt = ref(null)
 const showInstallBanner = ref(false)
 
-// PWA Service Worker registration
 const {
   needRefresh,
   updateServiceWorker
@@ -35,47 +33,30 @@ const {
   }
 })
 
-// Check if device is mobile
 function isMobileDevice() {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
     || window.innerWidth <= 1024
 }
 
-// Handle PWA install prompt (desktop only)
 function handleBeforeInstallPrompt(e) {
-  // Prevent the mini-infobar from appearing
   e.preventDefault()
-  
-  // Only show install banner on desktop
-  if (isMobileDevice()) {
-    return
-  }
-  
-  // Stash the event so it can be triggered later
+  if (isMobileDevice()) return
   deferredPrompt.value = e
-  // Show install banner
   showInstallBanner.value = true
 }
 
 async function installApp() {
   if (!deferredPrompt.value) return
-  
-  // Show the install prompt
   deferredPrompt.value.prompt()
-  
-  // Wait for the user to respond to the prompt
   const { outcome } = await deferredPrompt.value.userChoice
-  
   if (outcome === 'accepted') {
     toast.add({
       severity: 'success',
-      summary: 'App Installed',
-      detail: 'twofa.dev has been installed',
+      summary: '安装成功',
+      detail: '2FA Sentinel 已成功安装为本地独立应用',
       life: 3000
     })
   }
-  
-  // Clear the deferred prompt
   deferredPrompt.value = null
   showInstallBanner.value = false
 }
@@ -88,13 +69,8 @@ function refreshApp() {
   updateServiceWorker(true)
 }
 
-// Offline status
 const isOnline = ref(navigator.onLine)
-
-// Mobile sidebar state
 const sidebarVisible = ref(false)
-
-// Mobile menu ref
 const mobileMenuRef = ref(null)
 
 function openSidebar() {
@@ -109,20 +85,17 @@ function updateOnlineStatus() {
   isOnline.value = navigator.onLine
 }
 
-// Initialize store from localStorage
 onMounted(() => {
   store.loadFromStorage()
   window.addEventListener('online', updateOnlineStatus)
   window.addEventListener('offline', updateOnlineStatus)
   window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
   
-  // Handle app installed event
   window.addEventListener('appinstalled', () => {
     showInstallBanner.value = false
     deferredPrompt.value = null
   })
   
-  // Dispatch event for prerendering (signals app is ready)
   document.dispatchEvent(new Event('app-rendered'))
 })
 
@@ -132,32 +105,30 @@ onUnmounted(() => {
   window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
 })
 
-// Save token (add from sidebar)
 function handleSaveToken(tokenData) {
   store.addToken(tokenData)
   toast.add({
     severity: 'success',
-    summary: 'Token Added',
-    detail: `${tokenData.name} has been added`,
+    summary: '添加成功',
+    detail: `已成功录入 ${tokenData.name}`,
     life: 3000
   })
   sidebarVisible.value = false
 }
 
-// Delete single token
 function handleDeleteToken({ token, event }) {
   confirm.require({
     target: event.currentTarget,
-    message: `Delete "${token.name}"?`,
+    message: `确定要移除 "${token.name}" 吗？`,
     icon: 'pi pi-exclamation-triangle',
     rejectProps: {
-      label: 'Cancel',
+      label: '取消',
       severity: 'secondary',
       text: true,
       size: 'small'
     },
     acceptProps: {
-      label: 'Delete',
+      label: '确定移除',
       severity: 'danger',
       size: 'small'
     },
@@ -165,21 +136,20 @@ function handleDeleteToken({ token, event }) {
       store.deleteToken(token.id)
       toast.add({
         severity: 'success',
-        summary: 'Token Deleted',
-        detail: `${token.name} has been deleted`,
+        summary: '删除成功',
+        detail: `已移除 ${token.name}`,
         life: 3000
       })
     }
   })
 }
 
-// Delete all tokens
 function handleDeleteAll(event) {
   if (store.tokens.length === 0) {
     toast.add({
       severity: 'info',
-      summary: 'No Tokens',
-      detail: 'There are no tokens to delete',
+      summary: '提示',
+      detail: '暂无令牌可删除',
       life: 3000
     })
     return
@@ -187,16 +157,16 @@ function handleDeleteAll(event) {
 
   confirm.require({
     target: event.currentTarget,
-    message: `Delete all ${store.tokens.length} tokens?`,
+    message: `确定要彻底清空全部 ${store.tokens.length} 个令牌？此操作不可撤销！`,
     icon: 'pi pi-exclamation-triangle',
     rejectProps: {
-      label: 'Cancel',
+      label: '取消',
       severity: 'secondary',
       text: true,
       size: 'small'
     },
     acceptProps: {
-      label: 'Delete All',
+      label: '彻底清空',
       severity: 'danger',
       size: 'small'
     },
@@ -205,21 +175,20 @@ function handleDeleteAll(event) {
       store.deleteAllTokens()
       toast.add({
         severity: 'success',
-        summary: 'All Tokens Deleted',
-        detail: `${count} tokens have been deleted`,
+        summary: '清空成功',
+        detail: `已清空 ${count} 个令牌`,
         life: 3000
       })
     }
   })
 }
 
-// Export tokens
 function handleExport() {
   if (store.tokens.length === 0) {
     toast.add({
       severity: 'info',
-      summary: 'No Tokens',
-      detail: 'There are no tokens to export',
+      summary: '提示',
+      detail: '当前没有可以导出的令牌',
       life: 3000
     })
     return
@@ -228,16 +197,20 @@ function handleExport() {
   store.downloadExport()
   toast.add({
     severity: 'success',
-    summary: 'Export Complete',
-    detail: `${store.tokens.length} tokens exported`,
+    summary: '导出成功',
+    detail: `已导出 ${store.tokens.length} 个令牌备份`,
     life: 3000
   })
 }
-
 </script>
 
 <template>
-  <div class="app">
+  <div class="app-root">
+    <!-- Cyber Background glow grids -->
+    <div class="cyber-grid"></div>
+    <div class="cyber-glow-orb orb-1"></div>
+    <div class="cyber-glow-orb orb-2"></div>
+
     <Toast />
     <ConfirmPopup />
 
@@ -247,44 +220,13 @@ function handleExport() {
         <div class="pwa-banner-content">
           <i class="pi pi-download"></i>
           <div class="pwa-banner-text">
-            <strong>Install twofa.dev</strong>
-            <span>Use this app offline on your device</span>
+            <strong>安装 2FA Sentinel PWA 独立应用</strong>
+            <span>支持完全离线在本地安全运行</span>
           </div>
         </div>
         <div class="pwa-banner-actions">
-          <Button
-            label="Install"
-            size="small"
-            @click="installApp"
-          />
-          <Button
-            icon="pi pi-times"
-            text
-            rounded
-            size="small"
-            @click="dismissInstallBanner"
-            aria-label="Dismiss"
-          />
-        </div>
-      </div>
-    </Transition>
-
-    <!-- PWA Update Available Banner -->
-    <Transition name="slide-down">
-      <div v-if="needRefresh" class="pwa-banner update-banner">
-        <div class="pwa-banner-content">
-          <i class="pi pi-refresh"></i>
-          <div class="pwa-banner-text">
-            <strong>Update Available</strong>
-            <span>A new version is ready to install</span>
-          </div>
-        </div>
-        <div class="pwa-banner-actions">
-          <Button
-            label="Update Now"
-            size="small"
-            @click="refreshApp"
-          />
+          <Button label="立即安装" size="small" @click="installApp" />
+          <Button icon="pi pi-times" text rounded size="small" @click="dismissInstallBanner" />
         </div>
       </div>
     </Transition>
@@ -310,8 +252,12 @@ function handleExport() {
       <main class="app-main">
         <div class="main-content">
           <div class="content-header">
-            <h2 class="page-title">Your Tokens</h2>
-            <p class="page-subtitle">Manage and view your TOTP authentication codes</p>
+            <div class="header-badge">
+              <span class="live-dot"></span>
+              <span>ZERO-KNOWLEDGE AUTH ENGINE</span>
+            </div>
+            <h2 class="page-title">动态身份令牌</h2>
+            <p class="page-subtitle">RFC 6238 TOTP 纯本地高安全计算引擎 · 支持 WebDAV 云备份</p>
           </div>
 
           <TokenList
@@ -335,16 +281,22 @@ function handleExport() {
 </template>
 
 <style>
-/* Global styles */
+/* Global Cyber Dark Theme */
 * {
   box-sizing: border-box;
 }
 
+:root {
+  color-scheme: dark;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  background: #fafafa;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #090a0f;
+  color: #f1f5f9;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 #app {
@@ -353,76 +305,203 @@ body {
   flex-direction: column;
 }
 
-/* Toast styling - constrain width */
+/* Toast dark styling */
 .p-toast {
   max-width: calc(100vw - 2rem);
   width: auto;
 }
 
 .p-toast .p-toast-message {
-  max-width: 320px;
-  width: 100%;
+  background: rgba(15, 23, 42, 0.95) !important;
+  border: 1px solid rgba(56, 189, 248, 0.3) !important;
+  backdrop-filter: blur(12px) !important;
+  color: #f8fafc !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
 }
 
-@media (max-width: 480px) {
-  .p-toast {
-    left: 1rem !important;
-    right: 1rem !important;
-    width: auto !important;
-  }
-  
-  .p-toast .p-toast-message {
-    max-width: 100%;
-  }
+.p-confirmpopup {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border: 1px solid rgba(56, 189, 248, 0.25) !important;
+  backdrop-filter: blur(16px) !important;
+  color: #f8fafc !important;
+  border-radius: 12px !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7) !important;
+}
+
+.p-confirmpopup .p-confirmpopup-content {
+  color: #cbd5e1 !important;
+  padding: 1rem !important;
+}
+
+/* PrimeVue dark input text styling */
+.p-inputtext {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 1px solid rgba(59, 130, 246, 0.25) !important;
+  color: #f8fafc !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+}
+
+.p-inputtext:focus {
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25) !important;
+}
+
+.p-select {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border: 1px solid rgba(59, 130, 246, 0.25) !important;
+  color: #f8fafc !important;
+  border-radius: 8px !important;
+}
+
+.p-dialog {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border: 1px solid rgba(56, 189, 248, 0.25) !important;
+  backdrop-filter: blur(20px) !important;
+  color: #f8fafc !important;
+  border-radius: 16px !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8) !important;
+}
+
+.p-dialog-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #f8fafc !important;
 }
 </style>
 
 <style scoped>
-.app {
+.app-root {
+  position: relative;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background: #090a0f;
+  z-index: 1;
 }
 
-/* PWA Banners */
+/* Cyber background elements */
+.cyber-grid {
+  position: fixed;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.cyber-glow-orb {
+  position: fixed;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  filter: blur(140px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.25;
+}
+
+.orb-1 {
+  top: -100px;
+  right: -100px;
+  background: radial-gradient(circle, #0284c7, transparent 70%);
+}
+
+.orb-2 {
+  bottom: -150px;
+  left: -150px;
+  background: radial-gradient(circle, #6366f1, transparent 70%);
+}
+
+.app-layout {
+  display: flex;
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.app-main {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.main-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2.5rem 2rem;
+}
+
+.content-header {
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.65rem;
+  background: rgba(14, 165, 233, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #38bdf8;
+  letter-spacing: 0.08em;
+  width: fit-content;
+}
+
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 8px #38bdf8;
+}
+
+.page-title {
+  margin: 0.25rem 0 0;
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #f8fafc;
+  letter-spacing: -0.02em;
+}
+
+.page-subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #94a3b8;
+}
+
+/* PWA Banner */
 .pwa-banner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.875rem 1.5rem;
-  gap: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(90deg, rgba(14, 165, 233, 0.9), rgba(59, 130, 246, 0.9));
+  color: white;
   z-index: 1001;
-}
-
-.install-banner {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: white;
-}
-
-.update-banner {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  color: white;
 }
 
 .pwa-banner-content {
   display: flex;
   align-items: center;
-  gap: 0.875rem;
-}
-
-.pwa-banner-content > i {
-  font-size: 1.25rem;
+  gap: 0.75rem;
 }
 
 .pwa-banner-text {
   display: flex;
   flex-direction: column;
-  gap: 0.125rem;
 }
 
 .pwa-banner-text strong {
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: 0.85rem;
 }
 
 .pwa-banner-text span {
@@ -434,91 +513,6 @@ body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-}
-
-.pwa-banner-actions :deep(.p-button) {
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
-}
-
-.pwa-banner-actions :deep(.p-button:hover) {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-.pwa-banner-actions :deep(.p-button.p-button-text) {
-  background: transparent;
-  border: none;
-  color: white;
-}
-
-.pwa-banner-actions :deep(.p-button.p-button-text:hover) {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-/* Banner transitions */
-.slide-down-enter-active,
-.slide-down-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-down-enter-from,
-.slide-down-leave-to {
-  transform: translateY(-100%);
-  opacity: 0;
-}
-
-@media (max-width: 640px) {
-  .pwa-banner {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 1rem;
-    gap: 0.75rem;
-  }
-
-  .pwa-banner-actions {
-    justify-content: flex-end;
-  }
-}
-
-.app-layout {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-  position: relative;
-}
-
-.sidebar-overlay {
-  display: none;
-}
-
-.app-main {
-  flex: 1;
-  overflow-y: auto;
-  background: #fafafa;
-}
-
-.main-content {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 2rem;
-}
-
-.content-header {
-  margin-bottom: 2rem;
-}
-
-.page-title {
-  margin: 0 0 0.5rem;
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #18181b;
-}
-
-.page-subtitle {
-  margin: 0;
-  font-size: 0.875rem;
-  color: #71717a;
 }
 
 @media (max-width: 1024px) {
@@ -533,23 +527,13 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
     z-index: 998;
   }
 
   .main-content {
-    padding: 1.5rem;
-  }
-}
-
-
-@media (max-width: 640px) {
-  .main-content {
-    padding: 1rem;
-  }
-
-  .page-title {
-    font-size: 1.5rem;
+    padding: 1.5rem 1rem;
   }
 }
 </style>

@@ -14,7 +14,6 @@ const props = defineProps({
 const emit = defineEmits(['edit', 'delete'])
 const toast = useToast()
 
-// Use the TOTP composable with a ref to the token
 const tokenRef = toRef(props, 'token')
 const { code, remainingSeconds, progress, error } = useTOTP(tokenRef)
 
@@ -27,269 +26,414 @@ const formattedCode = computed(() => {
   return code.value.slice(0, mid) + ' ' + code.value.slice(mid)
 })
 
-// Algorithm badge color
-const algoBadgeClass = computed(() => {
-  const algo = props.token.algorithm || 'SHA-1'
-  if (algo === 'SHA-256') return 'bg-blue-100 text-blue-800'
-  if (algo === 'SHA-512') return 'bg-purple-100 text-purple-800'
-  return 'bg-gray-100 text-gray-800'
+// Circular progress calculation
+const strokeDashoffset = computed(() => {
+  const circumference = 2 * Math.PI * 14 // r=14 => ~87.96
+  return circumference - (progress.value / 100) * circumference
 })
 
 function copyCode() {
+  if (!code.value || code.value === 'ERROR' || code.value === '------') return
   navigator.clipboard.writeText(code.value)
   toast.add({
     severity: 'success',
-    summary: 'Copied!',
-    detail: `Code for ${props.token.name} copied to clipboard`,
+    summary: '已复制！',
+    detail: `${props.token.name} 的验证码已存入剪贴板`,
     life: 2000
   })
 }
 </script>
 
 <template>
-  <div class="token-card">
-    <!-- Delete button - floating X -->
+  <div class="tech-card" :class="{ 'warning-mode': remainingSeconds <= 5 }">
+    <!-- Cyber corner accents -->
+    <div class="corner-accent corner-tl"></div>
+    <div class="corner-accent corner-br"></div>
+
+    <!-- Delete button -->
     <button
       class="delete-btn"
       @click="(e) => emit('delete', { token, event: e })"
-      title="Delete token"
-      aria-label="Delete token"
+      title="删除令牌"
+      aria-label="删除令牌"
     >
       <i class="pi pi-times"></i>
     </button>
 
     <!-- Card Header -->
     <div class="card-header">
-      <h3 class="token-name">{{ token.name }}</h3>
+      <div class="token-title-group">
+        <span class="status-dot"></span>
+        <h3 class="token-name" :title="token.name">{{ token.name }}</h3>
+      </div>
       <div class="token-badges">
-        <span class="badge badge-algo" :class="algoBadgeClass">{{ token.algorithm || 'SHA-1' }}</span>
-        <span class="badge badge-period">{{ token.period || 30 }}s</span>
+        <span class="badge algo-badge">{{ token.algorithm || 'SHA-1' }}</span>
+        <span class="badge period-badge">{{ token.period || 30 }}s</span>
       </div>
     </div>
 
     <!-- Card Body -->
     <div class="card-body">
-      <div class="code-display" @click="copyCode">
+      <div class="code-box" @click="copyCode" title="点击立即复制">
+        <div class="code-glow"></div>
         <span v-if="error" class="code-error">{{ error }}</span>
         <span v-else class="code-value">{{ formattedCode }}</span>
-        <span class="code-hint">Click to copy</span>
+        <div class="copy-hint">
+          <i class="pi pi-copy"></i>
+          <span>点击复制</span>
+        </div>
       </div>
     </div>
 
-    <!-- Card Footer -->
-    <div class="card-footer" :class="{ 'footer-warning': remainingSeconds <= 5 }">
-      <div class="timer-bar">
-        <div class="timer-fill" :style="{ width: progress + '%' }"></div>
+    <!-- Card Footer with Neon Circular Timer -->
+    <div class="card-footer">
+      <div class="timer-wrapper">
+        <div class="circular-timer">
+          <svg width="34" height="34" viewBox="0 0 34 34">
+            <circle class="timer-bg" cx="17" cy="17" r="14"></circle>
+            <circle
+              class="timer-progress"
+              cx="17"
+              cy="17"
+              r="14"
+              :style="{ strokeDashoffset: strokeDashoffset }"
+            ></circle>
+          </svg>
+          <span class="timer-num">{{ remainingSeconds }}</span>
+        </div>
+        <div class="timer-meta">
+          <span class="timer-label">实时刷新</span>
+          <span class="timer-status">{{ remainingSeconds <= 5 ? '即将轮换' : '安全有效期' }}</span>
+        </div>
       </div>
-      <span class="timer-text">{{ remainingSeconds }}s</span>
-      <Button
-        icon="pi pi-copy"
-        label="Copy"
-        size="small"
-        text
-        @click="copyCode"
-        class="copy-btn"
-      />
+
+      <button class="quick-copy-btn" @click="copyCode">
+        <i class="pi pi-clone"></i>
+        <span>复制</span>
+      </button>
     </div>
   </div>
 </template>
 
 <style scoped>
-.token-card {
+.tech-card {
   position: relative;
-  background: white;
-  border: 1px solid #e4e4e7;
-  border-radius: 12px;
+  background: rgba(18, 20, 29, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 16px;
   overflow: hidden;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
-.token-card:hover {
-  border-color: #d4d4d8;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+.tech-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(96, 165, 250, 0.45);
+  box-shadow: 0 12px 40px rgba(14, 165, 233, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-.token-card:hover .delete-btn {
-  opacity: 1;
+/* Cyber corner accents */
+.corner-accent {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  pointer-events: none;
+}
+.corner-tl {
+  top: 0;
+  left: 0;
+  border-top: 2px solid #38bdf8;
+  border-left: 2px solid #38bdf8;
+  border-top-left-radius: 4px;
+}
+.corner-br {
+  bottom: 0;
+  right: 0;
+  border-bottom: 2px solid #38bdf8;
+  border-right: 2px solid #38bdf8;
+  border-top-right-radius: 4px;
 }
 
-/* Delete Button - Floating X */
+/* Floating delete button */
 .delete-btn {
   position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
+  top: 1rem;
+  right: 1rem;
   width: 28px;
   height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
-  border: none;
-  border-radius: 6px;
-  color: #a1a1aa;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: #64748b;
   cursor: pointer;
-  opacity: 0;
-  transition: all 0.15s ease;
-  z-index: 1;
+  opacity: 0.5;
+  transition: all 0.2s ease;
+  z-index: 2;
 }
-
+.tech-card:hover .delete-btn {
+  opacity: 1;
+}
 .delete-btn:hover {
-  background: #fef2f2;
-  color: #ef4444;
-}
-
-.delete-btn i {
-  font-size: 0.875rem;
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #f87171;
+  transform: scale(1.05);
 }
 
 /* Card Header */
 .card-header {
-  padding: 1rem 1.25rem 0.75rem;
+  padding: 1.25rem 1.25rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.token-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-right: 2.2rem;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  flex-shrink: 0;
+}
+
+.warning-mode .status-dot {
+  background: #ef4444;
+  box-shadow: 0 0 10px #ef4444;
 }
 
 .token-name {
-  margin: 0 0 0.5rem;
-  font-size: 0.9375rem;
+  margin: 0;
+  font-size: 1rem;
   font-weight: 600;
-  color: #18181b;
-  padding-right: 2rem;
+  color: #f1f5f9;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .token-badges {
   display: flex;
-  gap: 0.375rem;
+  gap: 0.4rem;
 }
 
 .badge {
-  padding: 0.1875rem 0.5rem;
+  padding: 0.15rem 0.45rem;
   border-radius: 4px;
-  font-size: 0.6875rem;
-  font-weight: 600;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
 }
 
-.bg-gray-100 { background-color: #f4f4f5; }
-.text-gray-800 { color: #52525b; }
-.bg-blue-100 { background-color: #eff6ff; }
-.text-blue-800 { color: #1d4ed8; }
-.bg-purple-100 { background-color: #faf5ff; }
-.text-purple-800 { color: #7e22ce; }
-
-.badge-period {
-  background-color: #f0fdf4;
-  color: #15803d;
+.algo-badge {
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.25);
 }
 
-/* Card Body */
+.period-badge {
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+/* Card Body / Code Box */
 .card-body {
-  padding: 0 1.25rem 1rem;
+  padding: 0.5rem 1.25rem 1rem;
 }
 
-.code-display {
+.code-box {
+  position: relative;
   width: 100%;
   cursor: pointer;
-  padding: 1rem;
-  border-radius: 8px;
-  background: #fafafa;
-  border: 1px solid #e4e4e7;
-  transition: all 0.15s ease;
-  text-align: center;
+  padding: 1.15rem 1rem;
+  border-radius: 12px;
+  background: rgba(10, 12, 18, 0.85);
+  border: 1px solid rgba(59, 130, 246, 0.25);
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  overflow: hidden;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.code-display:hover {
-  background: #f4f4f5;
-  border-color: #d4d4d8;
+.code-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.12), transparent 70%);
+  pointer-events: none;
 }
 
-.code-display:active {
-  transform: scale(0.99);
+.code-box:hover {
+  background: rgba(15, 23, 42, 0.95);
+  border-color: #38bdf8;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+  transform: scale(1.01);
+}
+
+.code-box:active {
+  transform: scale(0.98);
 }
 
 .code-value {
-  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+  font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
   font-size: 2.25rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  color: #18181b;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: #f8fafc;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.4), 0 0 24px rgba(56, 189, 248, 0.3);
+  z-index: 1;
 }
 
-.code-hint {
-  font-size: 0.6875rem;
-  color: #a1a1aa;
+.warning-mode .code-value {
+  color: #fca5a5;
+  text-shadow: 0 0 12px rgba(239, 68, 68, 0.5);
+}
+
+.copy-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.65rem;
+  color: #64748b;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  z-index: 1;
+  transition: color 0.2s ease;
+}
+
+.code-box:hover .copy-hint {
+  color: #38bdf8;
 }
 
 .code-error {
-  color: #ef4444;
-  font-size: 0.8125rem;
-  font-weight: 500;
+  color: #f87171;
+  font-size: 0.85rem;
 }
 
 /* Card Footer */
 .card-footer {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem 0.5rem 1.25rem;
-  background: #fafafa;
-  border-top: 1px solid #f4f4f5;
+  justify-content: space-between;
+  padding: 0.75rem 1.25rem;
+  background: rgba(10, 12, 18, 0.6);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.timer-bar {
-  flex: 1;
-  height: 4px;
-  background: #e4e4e7;
-  border-radius: 2px;
-  overflow: hidden;
+.timer-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
-.timer-fill {
-  height: 100%;
-  background: #18181b;
-  border-radius: 2px;
-  transition: width 1s linear;
+.circular-timer {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.footer-warning .timer-fill {
-  background: #ef4444;
+.circular-timer svg {
+  transform: rotate(-90deg);
 }
 
-.timer-text {
+.timer-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 3;
+}
+
+.timer-progress {
+  fill: none;
+  stroke: #38bdf8;
+  stroke-width: 3;
+  stroke-dasharray: 88;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s linear;
+}
+
+.warning-mode .timer-progress {
+  stroke: #ef4444;
+}
+
+.timer-num {
+  position: absolute;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 0.75rem;
-  font-weight: 600;
-  color: #71717a;
-  min-width: 24px;
-  text-align: right;
+  font-weight: 700;
+  color: #94a3b8;
 }
 
-.footer-warning .timer-text {
+.warning-mode .timer-num {
   color: #ef4444;
 }
 
-.copy-btn {
-  flex-shrink: 0;
-  color: #71717a;
+.timer-meta {
+  display: flex;
+  flex-direction: column;
 }
 
-.copy-btn:hover {
-  color: #18181b;
-  background: #e4e4e7;
+.timer-label {
+  font-size: 0.65rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-/* Mobile adjustments */
+.timer-status {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+.warning-mode .timer-status {
+  color: #f87171;
+}
+
+.quick-copy-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quick-copy-btn:hover {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+}
+
 @media (max-width: 640px) {
-  .delete-btn {
-    opacity: 1;
-  }
-  
   .code-value {
-    font-size: 1.75rem;
+    font-size: 1.85rem;
   }
 }
 </style>
-
