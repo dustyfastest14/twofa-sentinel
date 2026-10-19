@@ -54,7 +54,8 @@ function closeDrawer() {
           <li><i class="pi pi-lock"></i> 100% 离线计算</li>
           <li><i class="pi pi-cloud"></i> WebDAV 跨端同步</li>
           <li><i class="pi pi-camera"></i> 二维码极速扫码</li>
-          <li><i class="pi pi-download"></i> JSON 自由导入/导出</li>
+          <li><i class="pi pi-share-alt"></i> 单条导出 (二维码/URI)</li>
+          <li><i class="pi pi-download"></i> 批量多选自由导出</li>
           <li><i class="pi pi-shield"></i> 本地持久化储存</li>
           <li><i class="pi pi-mobile"></i> 支持全平台 PWA</li>
         </ul>
