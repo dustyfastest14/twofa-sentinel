@@ -37,7 +37,7 @@ const speedDialItems = [
     }
   },
   {
-    label: '导出 JSON',
+    label: '批量导出',
     icon: 'pi pi-download',
     command: () => {
       emit('export')

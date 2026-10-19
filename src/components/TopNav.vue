@@ -33,7 +33,7 @@ const showWebdavModal = ref(false)
           @click="showWebdavModal = true"
         />
         <Button
-          label="导出备份"
+          label="批量导出"
           icon="pi pi-download"
           class="cyber-btn"
           size="small"

@@ -13,6 +13,7 @@ import Toast from 'primevue/toast'
 import ConfirmPopup from 'primevue/confirmpopup'
 import Button from 'primevue/button'
 import MobileMenu from '@/components/MobileMenu.vue'
+import ExportModal from '@/components/ExportModal.vue'
 
 const store = useTokenStore()
 const confirm = useConfirm()
@@ -72,6 +73,29 @@ function refreshApp() {
 const isOnline = ref(navigator.onLine)
 const sidebarVisible = ref(false)
 const mobileMenuRef = ref(null)
+
+// Export modal state
+const showExportModal = ref(false)
+const exportTargetToken = ref(null)
+
+function handleSingleExport(token) {
+  exportTargetToken.value = token
+  showExportModal.value = true
+}
+
+function handleBatchExport() {
+  if (store.tokens.length === 0) {
+    toast.add({
+      severity: 'info',
+      summary: '提示',
+      detail: '当前没有可以导出的令牌',
+      life: 3000
+    })
+    return
+  }
+  exportTargetToken.value = null
+  showExportModal.value = true
+}
 
 function openSidebar() {
   sidebarVisible.value = true
@@ -234,7 +258,7 @@ function handleExport() {
     <TopNav
       :is-online="isOnline"
       @clear-all="handleDeleteAll"
-      @export="handleExport"
+      @export="handleBatchExport"
     />
 
     <div class="app-layout">
@@ -263,6 +287,7 @@ function handleExport() {
           <TokenList
             :tokens="store.tokens"
             @delete="handleDeleteToken"
+            @export="handleSingleExport"
             @add-token="openSidebar"
             @scan-qr="handleScanQr"
           />
@@ -273,8 +298,14 @@ function handleExport() {
       <MobileMenu
         ref="mobileMenuRef"
         @open-sidebar="openSidebar"
-        @export="handleExport"
+        @export="handleBatchExport"
         @clear-all="handleDeleteAll"
+      />
+
+      <!-- Single & Batch Export Modal -->
+      <ExportModal
+        v-model:visible="showExportModal"
+        :single-token="exportTargetToken"
       />
     </div>
   </div>

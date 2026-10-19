@@ -96,13 +96,27 @@ export const useTokenStore = defineStore('tokens', {
     },
 
     /**
-     * Export tokens as JSON string
+     * Build an otpauth:// TOTP URI for a token
      */
-    exportTokens() {
+    getOtpauthUri(token) {
+      if (!token || !token.secret) return ''
+      const label = encodeURIComponent(token.name || 'Unnamed')
+      const secret = encodeURIComponent(token.secret)
+      const algorithm = encodeURIComponent(token.algorithm || 'SHA-1')
+      const digits = token.digits || 6
+      const period = token.period || 30
+      return `otpauth://totp/${label}?secret=${secret}&algorithm=${algorithm}&digits=${digits}&period=${period}`
+    },
+
+    /**
+     * Export tokens as JSON string (all or specific array of tokens)
+     */
+    exportTokens(tokenList = null) {
+      const list = tokenList || this.tokens
       const exportData = {
         version: 1,
         exportedAt: new Date().toISOString(),
-        tokens: this.tokens.map(t => ({
+        tokens: list.map(t => ({
           name: t.name,
           secret: t.secret,
           algorithm: t.algorithm,
@@ -111,6 +125,24 @@ export const useTokenStore = defineStore('tokens', {
         }))
       }
       return JSON.stringify(exportData, null, 2)
+    },
+
+    /**
+     * Download tokens as a JSON file
+     */
+    downloadExport(tokenList = null, filename = null) {
+      const json = this.exportTokens(tokenList)
+      const blob = new Blob([json], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      
+      const defaultName = filename || `totp-backup-${new Date().toISOString().split('T')[0]}.json`
+      const a = document.createElement('a')
+      a.href = url
+      a.download = defaultName
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
     },
 
     /**

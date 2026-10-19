@@ -11,7 +11,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['edit', 'delete'])
+const emit = defineEmits(['edit', 'delete', 'export'])
 const toast = useToast()
 
 const tokenRef = toRef(props, 'token')
@@ -50,15 +50,25 @@ function copyCode() {
     <div class="corner-accent corner-tl"></div>
     <div class="corner-accent corner-br"></div>
 
-    <!-- Delete button -->
-    <button
-      class="delete-btn"
-      @click="(e) => emit('delete', { token, event: e })"
-      title="删除令牌"
-      aria-label="删除令牌"
-    >
-      <i class="pi pi-times"></i>
-    </button>
+    <!-- Action buttons (Export & Delete) -->
+    <div class="card-action-group">
+      <button
+        class="card-action-btn export-btn"
+        @click="(e) => emit('export', token)"
+        title="导出 / 二维码"
+        aria-label="导出 / 二维码"
+      >
+        <i class="pi pi-share-alt"></i>
+      </button>
+      <button
+        class="card-action-btn delete-btn"
+        @click="(e) => emit('delete', { token, event: e })"
+        title="删除令牌"
+        aria-label="删除令牌"
+      >
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
 
     <!-- Card Header -->
     <div class="card-header">
@@ -156,11 +166,18 @@ function copyCode() {
   border-top-right-radius: 4px;
 }
 
-/* Floating delete button */
-.delete-btn {
+/* Floating action buttons */
+.card-action-group {
   position: absolute;
   top: 1rem;
   right: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  z-index: 2;
+}
+
+.card-action-btn {
   width: 28px;
   height: 28px;
   display: flex;
@@ -173,11 +190,19 @@ function copyCode() {
   cursor: pointer;
   opacity: 0.5;
   transition: all 0.2s ease;
-  z-index: 2;
 }
-.tech-card:hover .delete-btn {
+
+.tech-card:hover .card-action-btn {
   opacity: 1;
 }
+
+.export-btn:hover {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+  transform: scale(1.05);
+}
+
 .delete-btn:hover {
   background: rgba(239, 68, 68, 0.2);
   border-color: rgba(239, 68, 68, 0.4);

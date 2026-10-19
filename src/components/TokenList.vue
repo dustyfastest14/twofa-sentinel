@@ -10,7 +10,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['edit', 'delete', 'add-token', 'scan-qr'])
+const emit = defineEmits(['edit', 'delete', 'export', 'add-token', 'scan-qr'])
 
 const hasTokens = computed(() => props.tokens.length > 0)
 </script>
@@ -24,6 +24,7 @@ const hasTokens = computed(() => props.tokens.length > 0)
         :token="token"
         @edit="emit('edit', $event)"
         @delete="emit('delete', $event)"
+        @export="emit('export', $event)"
       />
     </div>
     
