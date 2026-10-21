@@ -100,12 +100,42 @@ export const useTokenStore = defineStore('tokens', {
      */
     getOtpauthUri(token) {
       if (!token || !token.secret) return ''
-      const label = encodeURIComponent(token.name || 'Unnamed')
-      const secret = encodeURIComponent(token.secret)
-      const algorithm = encodeURIComponent(token.algorithm || 'SHA-1')
-      const digits = token.digits || 6
-      const period = token.period || 30
-      return `otpauth://totp/${label}?secret=${secret}&algorithm=${algorithm}&digits=${digits}&period=${period}`
+      const name = token.name || 'Unnamed'
+      const label = encodeURIComponent(name)
+      // Clean secret (uppercase, strip whitespace and padding)
+      const cleanSecret = token.secret.toUpperCase().replace(/\s+/g, '').replace(/=+$/, '')
+      
+      // Google Authenticator strictly requires 'SHA1', 'SHA256', 'SHA512' without hyphens
+      let algo = (token.algorithm || 'SHA1').toUpperCase().replace('-', '')
+      if (algo !== 'SHA1' && algo !== 'SHA256' && algo !== 'SHA512') {
+        algo = 'SHA1'
+      }
+
+      const digits = parseInt(token.digits, 10) || 6
+      const period = parseInt(token.period, 10) || 30
+
+      const params = new URLSearchParams()
+      params.set('secret', cleanSecret)
+      
+      // If name has a colon (Issuer: Account), or use issuer param
+      if (name.includes(':')) {
+        const parts = name.split(':')
+        params.set('issuer', parts[0].trim())
+      } else {
+        params.set('issuer', name)
+      }
+
+      if (algo !== 'SHA1') {
+        params.set('algorithm', algo)
+      }
+      if (digits !== 6) {
+        params.set('digits', digits.toString())
+      }
+      if (period !== 30) {
+        params.set('period', period.toString())
+      }
+
+      return `otpauth://totp/${label}?${params.toString()}`
     },
 
     /**
