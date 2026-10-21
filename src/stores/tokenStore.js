@@ -153,7 +153,12 @@ export const useTokenStore = defineStore('tokens', {
       try {
         const data = JSON.parse(jsonString)
         
-        if (!data.tokens || !Array.isArray(data.tokens)) {
+        let tokenList = null
+        if (Array.isArray(data)) {
+          tokenList = data
+        } else if (data && Array.isArray(data.tokens)) {
+          tokenList = data.tokens
+        } else {
           throw new Error('Invalid import format: missing tokens array')
         }
 
@@ -162,7 +167,7 @@ export const useTokenStore = defineStore('tokens', {
         }
 
         let imported = 0
-        for (const token of data.tokens) {
+        for (const token of tokenList) {
           if (token.secret) {
             this.addToken({
               name: token.name || 'Imported',

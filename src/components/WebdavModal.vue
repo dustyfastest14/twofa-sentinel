@@ -65,7 +65,7 @@ async function uploadToWebdav() {
   try {
     const fullUrl = getFullUrl()
     const authHeader = getAuthHeader()
-    const content = JSON.stringify(store.tokens, null, 2)
+    const content = store.exportTokens()
 
     const headers = {
       'Content-Type': 'application/json',
